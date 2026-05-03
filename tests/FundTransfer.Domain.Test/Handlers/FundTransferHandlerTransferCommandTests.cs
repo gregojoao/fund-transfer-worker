@@ -41,9 +41,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new TransferCommand(transactionId, transferStatusEnum, accountOrigin, accountDestination, value);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.True(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.Error);
-            Assert.True(transfer.Message == INVALID_ACCOUNT_NUMBER);
+            Assert.That(commandResult.Sucess, Is.True);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.Error));
+            Assert.That(transfer.Message, Is.EqualTo(INVALID_ACCOUNT_NUMBER));
         }
 
         [Test]
@@ -64,9 +64,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new TransferCommand(transactionId, transferStatusEnum, accountOrigin, accountDestination, value);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.True(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.Error);
-            Assert.True(transfer.Message == INSUFFICIENT_FUNDS);
+            Assert.That(commandResult.Sucess, Is.True);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.Error));
+            Assert.That(transfer.Message, Is.EqualTo(INSUFFICIENT_FUNDS));
         }
 
         [Test]
@@ -90,9 +90,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new TransferCommand(transactionId, transferStatusEnum, accountOrigin, accountDestination, value);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.True(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.Processing);
-            Assert.True(transfer.Message == "");
+            Assert.That(commandResult.Sucess, Is.True);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.Processing));
+            Assert.That(transfer.Message, Is.EqualTo(""));
         }
 
         [Test]
@@ -116,9 +116,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new TransferCommand(transactionId, transferStatusEnum, accountOrigin, accountDestination, value);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.False(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.InQueue);
-            Assert.True(transfer.Message == "");
+            Assert.That(commandResult.Sucess, Is.False);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.InQueue));
+            Assert.That(transfer.Message, Is.EqualTo(""));
         }
 
         [Test]
@@ -142,9 +142,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new TransferCommand(transactionId, transferStatusEnum, accountOrigin, accountDestination, value);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.True(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.Confirmed);
-            Assert.True(transfer.Message == "");
+            Assert.That(commandResult.Sucess, Is.True);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.Confirmed));
+            Assert.That(transfer.Message, Is.EqualTo(""));
         }
     }
 }
