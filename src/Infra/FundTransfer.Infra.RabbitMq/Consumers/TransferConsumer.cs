@@ -22,30 +22,29 @@ namespace FundTransfer.Infra.RabbitMq.Consumers
             _configuration = configuration;
         }
 
-        public Task ReceiveAsync()
+        public async Task ReceiveAsync()
         {
             try
             {
                 var factory = new ConnectionFactory() { HostName = GetHostName() };
-                var connection = factory.CreateConnection();
-                var channel = connection.CreateModel();
-                channel.QueueDeclare(queue: GetTransferQueueName(), durable: true, exclusive: false, autoDelete: false, arguments: null);
-                RunWorker(channel);
-                RunWorker(channel);
+                var connection = await factory.CreateConnectionAsync();
+                var channel = await connection.CreateChannelAsync();
+                await channel.QueueDeclareAsync(queue: GetTransferQueueName(), durable: true, exclusive: false, autoDelete: false, arguments: null);
+                await RunWorkerAsync(channel);
+                await RunWorkerAsync(channel);
                 Log.Information($"[Transfer Consumer] - Initiated");
             }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "");
             }
-            return Task.CompletedTask;
         }
 
-        private void RunWorker(IModel channel)
+        private async Task RunWorkerAsync(IChannel channel)
         {
-            channel.BasicQos(0, 10, false);
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += async (model, ea) =>
+            await channel.BasicQosAsync(0, 10, false);
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
@@ -58,13 +57,13 @@ namespace FundTransfer.Infra.RabbitMq.Consumers
                     var transfer = (Transfer)commandResult.Data;
                     if (!commandResult.Sucess)
                     {
-                        channel.BasicNack(ea.DeliveryTag, false, true);
+                        await channel.BasicNackAsync(ea.DeliveryTag, false, true);
                         Log.Debug($"[{transactionId}] - {JsonConvert.SerializeObject(transfer)}");
                         Log.Information($"[{transactionId}] - Nack: {message}");
                     }
                     else
                     {
-                        channel.BasicAck(ea.DeliveryTag, false);
+                        await channel.BasicAckAsync(ea.DeliveryTag, false);
                         Log.Debug($"[{transactionId}] - {JsonConvert.SerializeObject(transfer)}");
                         Log.Information($"[{transactionId}] - Ack: {message}");
                     }
@@ -73,10 +72,10 @@ namespace FundTransfer.Infra.RabbitMq.Consumers
                 {
                     Log.Error(ex, "");
                     Log.Warning($"[{transactionId}] - Nack: {message}");
-                    channel.BasicNack(ea.DeliveryTag, false, true);
+                    await channel.BasicNackAsync(ea.DeliveryTag, false, true);
                 }
             };
-            channel.BasicConsume(queue: GetTransferQueueName(), autoAck: false, consumer: consumer);
+            await channel.BasicConsumeAsync(queue: GetTransferQueueName(), autoAck: false, consumer: consumer);
         }
 
         private string GetTransferQueueName() =>
