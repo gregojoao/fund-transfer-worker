@@ -38,8 +38,8 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new PendingTransferCommand(transactionId, account, value, transferType);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.False(commandResult.Sucess);
-            Assert.True(commandResult.Message == ERROR_OCCURRED);
+            Assert.That(commandResult.Sucess, Is.False);
+            Assert.That(commandResult.Message, Is.EqualTo(ERROR_OCCURRED));
         }
         
         [Test]
@@ -58,9 +58,9 @@ namespace FundTransfer.Domain.Test.Handlers
             var right = new PendingTransferCommand(transactionId, account, value, transferType);
             var commandResult = await _handler.Handle(right, default);
             var transfer = (Transfer)commandResult.Data;
-            Assert.True(commandResult.Sucess);
-            Assert.True(transfer.TransferStatus == TransferStatusEnum.Confirmed);
-            Assert.True(transfer.Message == "");
+            Assert.That(commandResult.Sucess, Is.True);
+            Assert.That(transfer.TransferStatus, Is.EqualTo(TransferStatusEnum.Confirmed));
+            Assert.That(transfer.Message, Is.EqualTo(""));
         }
     }
 }
